@@ -8,19 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('payments', function (Blueprint $table) {
+        Schema::create('reviews', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->decimal('amount', 10, 2);
-            $table->enum('status', ['completed', 'failed'])->default('completed');
-            $table->timestamp('payment_date');
+            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->integer('rating')->unsigned()->check('rating >= 1 AND rating <= 5');
+            $table->text('comment')->nullable();
+            $table->boolean('is_approved')->default(false);
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('payments');
+        Schema::dropIfExists('reviews');
     }
 };

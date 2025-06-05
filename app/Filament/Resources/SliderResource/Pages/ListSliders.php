@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\BlogResource\Pages;
+namespace App\Filament\Resources\SliderResource\Pages;
 
-use App\Filament\Resources\BlogResource;
+use App\Filament\Resources\SliderResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
-class ListBlogs extends ListRecords
+class ListSliders extends ListRecords
 {
-    protected static string $resource = BlogResource::class;
+    protected static string $resource = SliderResource::class;
 
     protected function getHeaderActions(): array
     {

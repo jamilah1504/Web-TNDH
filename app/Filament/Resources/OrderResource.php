@@ -2,18 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\OrderResource\Pages;
 use App\Models\Order;
-use App\Models\User;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
+use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
-use App\Filament\Resources\OrderResource\Pages;
-
 
 class OrderResource extends Resource
 {
@@ -22,58 +17,46 @@ class OrderResource extends Resource
     protected static ?string $navigationGroup = 'Manajemen Keuangan';
     protected static ?string $navigationLabel = 'Pesanan';
     protected static ?string $pluralLabel = 'Pesanan';
-
-    public static function form(Form $form): Form
+    
+    public static function form(Forms\Form $form): Forms\Form
     {
         return $form
             ->schema([
                 Select::make('user_id')
                     ->relationship('user', 'name')
-                    ->required(),
-                TextInput::make('order_number')
-                    ->required()
-                    ->maxLength(255),
+                    ->disabled(),
+                TextInput::make('total_amount')
+                    ->numeric()
+                    ->disabled()
+                    ->prefix('Rp'),
                 Select::make('status')
                     ->options([
                         'pending' => 'Pending',
                         'processing' => 'Processing',
+                        'shipped' => 'Shipped',
                         'completed' => 'Completed',
-                        'cancelled' => 'Cancelled'
+                        'cancelled' => 'Cancelled',
                     ])
                     ->required(),
-                TextInput::make('total_amount')
-                    ->numeric()
-                    ->required(),
-                Textarea::make('notes')
-                    ->columnSpanFull()
             ]);
     }
 
-    public static function table(Table $table): Table
+    public static function table(Tables\Table $table): Tables\Table
     {
         return $table
             ->columns([
-                TextColumn::make('order_number')
-                    ->searchable(),
-                TextColumn::make('user.name'),
-                TextColumn::make('status')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'pending' => 'warning',
-                        'processing' => 'info',
-                        'completed' => 'success',
-                        'cancelled' => 'danger',
-                    }),
-                TextColumn::make('total_amount')
-                    ->money('IDR')
+                TextColumn::make('id')->label('Order ID'),
+                TextColumn::make('user.name')->sortable()->searchable(),
+                TextColumn::make('total_amount')->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')),
+                TextColumn::make('status'),
+                TextColumn::make('created_at')->dateTime(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
 
@@ -81,8 +64,12 @@ class OrderResource extends Resource
     {
         return [
             'index' => Pages\ListOrders::route('/'),
-            'create' => Pages\CreateOrder::route('/create'),
             'edit' => Pages\EditOrder::route('/{record}/edit'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return false; // Disable create action
     }
 }

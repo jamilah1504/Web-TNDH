@@ -4,28 +4,29 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'id_product';
+    protected $primaryKey = 'id';
     protected $fillable = [
-        'id_category',
-        'name',
-        'description',
-        'total_product_detail'
+        'id_category', 'name', 'description', 'excerpt', 'price', 'discount_price',
+        'stock_quantity', 'image', 'is_available',
     ];
 
-    public function category(): BelongsTo
+    public function category()
     {
-        return $this->belongsTo(Category::class, 'id_category');
+        return $this->belongsTo(Category::class, 'id_category', 'id_category');
     }
 
-    public function productDetails(): HasMany
+    public function reviews()
     {
-        return $this->hasMany(ProductDetail::class, 'product_id');
+        return $this->hasMany(Review::class);
+    }
+
+    public function getEffectivePriceAttribute()
+    {
+        return $this->discount_price ?? $this->price;
     }
 }

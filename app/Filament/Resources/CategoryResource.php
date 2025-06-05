@@ -2,68 +2,46 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
-use Filament\Tables;
-use App\Models\Category;
-use Filament\Forms\Form;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
-use Filament\Forms\Components\Card;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
-use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\CategoryResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\CategoryResource\RelationManagers;
+use App\Models\Category;
+use Filament\Forms;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
 
 class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
+    
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel = 'Kategori';
     protected static ?string $pluralLabel = 'Kategori';
-
     protected static ?string $navigationGroup = 'Manajemen Menu';
 
-    public static function form(Form $form): Form
+    public static function form(Forms\Form $form): Forms\Form
     {
         return $form
             ->schema([
-                TextInput::make('name_category')
-                    ->required()
-                    ->maxLength(255),
-                TextInput::make('total_product')
-                    ->numeric()
-                    ->default(0)
+                TextInput::make('name_category')->required()->unique(),
+                TextInput::make('total_product')->disabled()->default(0),
             ]);
     }
 
-    public static function table(Table $table): Table
+    public static function table(Tables\Table $table): Tables\Table
     {
         return $table
-        ->columns([
-            TextColumn::make('name_category')
-                ->searchable(),
-            TextColumn::make('total_product')
-                ->numeric()
-        ])
-        ->actions([
-            Tables\Actions\EditAction::make(),
-        ])
-        ->bulkActions([
-            Tables\Actions\BulkActionGroup::make([
+            ->columns([
+                TextColumn::make('name_category')->sortable()->searchable(),
+                TextColumn::make('total_product'),
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
-            ]),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
     }
 
     public static function getPages(): array

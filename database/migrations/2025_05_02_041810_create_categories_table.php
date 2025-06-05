@@ -6,22 +6,16 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id('id_category');
-            $table->string('name_category');
+            $table->string('name_category')->unique();
             $table->integer('total_product')->default(0);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('categories');
