@@ -63,7 +63,7 @@
           </div>
         </div>
         <div class="col-lg-4 order-1 order-lg-2 hero-img" data-aos="zoom-out" data-aos-delay="300">
-          <img src="assets/img/hero-img.png" class="img-fluid animated" alt="TNDH+ Food Dish">
+          <img src="assets/img/bg.png" class="img-fluid animated" alt="TNDH+ Food Dish">
         </div>
       </div>
     </div>
