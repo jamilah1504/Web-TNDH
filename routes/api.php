@@ -29,18 +29,32 @@ Route::post('login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     
-    // Order Routes
-    Route::apiResource('orders', OrderController::class);
-    
-    // Review Routes
-    Route::apiResource('reviews', ReviewController::class);
-    
-    // Payment Routes
-    Route::apiResource('payments', PaymentController::class);
-    
-    // Notification Routes
-    Route::apiResource('notifications', NotifController::class);
 });
+// Order Routes
+// Order routes
+Route::get('/orders', [OrderController::class, 'orderIndex']);
+Route::post('/orders', [OrderController::class, 'orderStore']);
+Route::put('/orders/{id}', [OrderController::class, 'orderUpdate']);
+Route::delete('/orders/{id}', [OrderController::class, 'orderDestroy']);
+
+// Payment routes
+Route::get('/payments', [OrderController::class, 'paymentIndex']);
+Route::post('/payments', [OrderController::class, 'paymentStore']);
+// Cart routes
+Route::get('/cart', [OrderController::class, 'cartIndex']);
+Route::post('/cart', [OrderController::class, 'cartStore']);
+Route::put('/cart/{id}', [OrderController::class, 'cartUpdate']);
+Route::get('/cart/{user_id}', [OrderController::class, 'cartDetail']);
+Route::delete('/cart/{id}', [OrderController::class, 'cartDestroy']);
+
+// Review Routes
+Route::apiResource('reviews', ReviewController::class);
+
+// Payment Routes
+Route::apiResource('payments', PaymentController::class);
+
+// Notification Routes
+Route::apiResource('notifications', NotifController::class);
 
 // Public Routes
 Route::apiResource('products', ProductController::class);
