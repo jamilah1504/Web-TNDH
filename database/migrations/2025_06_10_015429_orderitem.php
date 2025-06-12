@@ -13,7 +13,14 @@ return new class extends Migration
     {
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id')->constrained()->onDelete('cascade');
+            // 1. Buat kolom 'order_id' dengan tipe data string (VARCHAR)
+            $table->string('order_id'); 
+            
+            // 2. Definisikan foreign key constraint secara manual
+            $table->foreign('order_id')
+                  ->references('id')      // Mengacu ke kolom 'id'
+                  ->on('orders')          // di tabel 'orders'
+                  ->onDelete('cascade'); // Hapus item jika order dihapus
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->integer('quantity')->default(1);
             $table->decimal('price', 10, 2);

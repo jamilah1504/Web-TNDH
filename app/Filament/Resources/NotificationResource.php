@@ -19,9 +19,10 @@ class NotificationResource extends Resource
     protected static ?string $model = Notification::class;
     protected static ?string $navigationIcon = 'heroicon-o-bell';
     protected static ?string $navigationGroup = 'Manajemen Informasi';
+     protected static ?int $navigationSort = 3;
     protected static ?string $navigationLabel = 'Notifikasi';
     protected static ?string $pluralLabel = 'Notifikasi';
-    
+
     public static function form(Forms\Form $form): Forms\Form
     {
         return $form

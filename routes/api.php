@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\MidtransController;
 use App\Http\Controllers\Api\NotifController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ReviewController;
@@ -60,3 +61,7 @@ Route::apiResource('notifications', NotifController::class);
 Route::apiResource('products', ProductController::class);
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('sliders', SliderController::class);
+
+Route::post('/create-transaction', [MidtransController::class, 'createTransaction']);
+Route::post('/midtrans-notification', [MidtransController::class, 'notificationHandler']);
+Route::post('/orders/update-status', [MidtransController::class, 'updateStatusFromClient']);

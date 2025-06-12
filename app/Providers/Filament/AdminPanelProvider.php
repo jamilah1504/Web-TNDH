@@ -53,6 +53,12 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->navigationGroups([
+            'Manajemen Pengguna',
+            'Manajemen Menu',
+            'Manajemen Keuangan',
+            'Manajemen Informasi',
+        ]);
     }
 }

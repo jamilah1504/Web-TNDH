@@ -9,8 +9,16 @@ class Order extends Model
 {
     use HasFactory;
 
+    // --- TAMBAHKAN INI ---
+    public $incrementing = false;
+    protected $keyType = 'string';
+    // --------------------
+
     protected $fillable = [
-        'user_id', 'total_amount', 'status',
+        'id', // Tambahkan 'id' karena kita akan mengisinya secara manual
+        'user_id', 
+        'total_amount', 
+        'status',
     ];
 
     public function user()

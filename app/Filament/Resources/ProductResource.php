@@ -23,22 +23,51 @@ class ProductResource extends Resource
     protected static ?string $navigationGroup = 'Manajemen Menu';
     protected static ?string $navigationLabel = 'Produk';
     protected static ?string $pluralLabel = 'Produk';
-    
+
     public static function form(Forms\Form $form): Forms\Form
     {
         return $form
             ->schema([
                 Select::make('id_category')
                     ->relationship('category', 'name_category')
+                    ->label('Kategori')
                     ->required(),
-                TextInput::make('name')->required(),
-                Textarea::make('description')->nullable(),
-                TextInput::make('excerpt')->required(),
-                TextInput::make('price')->numeric()->required(),
-                TextInput::make('discount_price')->numeric()->nullable(),
-                TextInput::make('stock_quantity')->numeric()->default(0),
-                FileUpload::make('image')->image()->directory('products'),
-                Toggle::make('is_available')->default(true),
+                TextInput::make('name')
+                    ->label('Nama Produk')
+                    ->required(),
+                Textarea::make('description')
+                    ->label('Deskripsi')
+                    ->nullable(),
+                TextInput::make('excerpt')
+                    ->label('Ringkasan')
+                    ->required(),
+                TextInput::make('price')
+                    ->label('Harga')
+                    ->numeric()
+                    ->required()
+                    ->step(0.01),
+                TextInput::make('discount_price')
+                    ->label('Harga Diskon')
+                    ->numeric()
+                    ->nullable()
+                    ->step(0.01),
+                Select::make('stock_status')
+                    ->label('Status Stok')
+                    ->options([
+                        'available' => 'Tersedia',
+                        'out_of_stock' => 'Habis'
+                    ])
+                    ->default('available')
+                    ->required(),
+                FileUpload::make('image')
+                    ->label('Gambar Produk')
+                    ->image()
+                    ->directory('products')
+                    ->nullable()
+                    ->default('default.jpg'),
+                Toggle::make('is_available')
+                    ->label('Tersedia?')
+                    ->default(true),
             ]);
     }
 
@@ -46,13 +75,30 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->sortable()->searchable(),
-                TextColumn::make('category.name_category'),
-                TextColumn::make('price')->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')),
-                TextColumn::make('discount_price')->formatStateUsing(fn ($state) => $state ? 'Rp ' . number_format($state, 0, ',', '.') : '-'),
-                TextColumn::make('stock_quantity'),
-                ImageColumn::make('image'),
-                BooleanColumn::make('is_available'),
+                TextColumn::make('name')
+                    ->label('Nama Produk')
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('category.name_category')
+                    ->label('Kategori'),
+                TextColumn::make('price')
+                    ->label('Harga')
+                    ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.'))
+                    ->sortable(),
+                TextColumn::make('discount_price')
+                    ->label('Harga Diskon')
+                    ->formatStateUsing(fn ($state) => $state ? 'Rp ' . number_format($state, 0, ',', '.') : '-')
+                    ->sortable(),
+                TextColumn::make('stock_status')
+                    ->label('Status Stok')
+                    ->formatStateUsing(fn ($state) => $state === 'available' ? 'Tersedia' : 'Habis'),
+                ImageColumn::make('image')
+                    ->label('Gambar'),
+                BooleanColumn::make('is_available')
+                    ->label('Tersedia?'),
+            ])
+            ->filters([
+                //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
