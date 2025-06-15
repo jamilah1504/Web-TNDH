@@ -13,7 +13,7 @@ use Filament\Tables\Columns\TextColumn;
 class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
-    
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel = 'Kategori';
     protected static ?string $pluralLabel = 'Kategori';
@@ -33,8 +33,9 @@ class CategoryResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name_category')->sortable()->searchable(),
-                TextColumn::make('total_product'),
-            ])
+                TextColumn::make('total_product')
+                    ->label('Total Produk')
+                    ->getStateUsing(fn ($record) => $record->products()->count()),            ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),

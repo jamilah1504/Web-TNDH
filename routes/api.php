@@ -39,10 +39,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('payments', PaymentController::class);
 
     // Notification Routes
-    Route::apiResource('notifications', NotifController::class);
 });
 
 // Public Routes
 Route::apiResource('products', ProductController::class);
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('sliders', SliderController::class);
+Route::apiResource('notifications', NotifController::class);

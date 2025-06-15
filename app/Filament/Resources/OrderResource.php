@@ -9,6 +9,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
+
 
 class OrderResource extends Resource
 {
@@ -17,7 +19,7 @@ class OrderResource extends Resource
     protected static ?string $navigationGroup = 'Manajemen Keuangan';
     protected static ?string $navigationLabel = 'Pesanan';
     protected static ?string $pluralLabel = 'Pesanan';
-    
+
     public static function form(Forms\Form $form): Forms\Form
     {
         return $form
@@ -53,7 +55,6 @@ class OrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

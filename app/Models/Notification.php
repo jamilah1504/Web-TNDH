@@ -10,16 +10,21 @@ class Notification extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'product_id', 'title', 'message', 'is_read',
+        'role', 'product_id', 'title', 'message', 'is_read',
     ];
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
 
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function users()
+    {
+        return User::where('role', $this->role)->get();
+    }
+
+    public function scopeForRole($query, $role)
+    {
+        return $query->where('role', $role);
     }
 }

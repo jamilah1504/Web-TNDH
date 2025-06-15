@@ -7,9 +7,9 @@ use App\Models\Notification;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BooleanColumn;
@@ -27,15 +27,26 @@ class NotificationResource extends Resource
     {
         return $form
             ->schema([
-                Select::make('user_id')
-                    ->relationship('user', 'name')
+                Select::make('role')
+                    ->label('Role')
+                    ->options([
+                        'admin' => 'Admin',
+                        'customer' => 'Customer',
+                    ])
                     ->required(),
                 Select::make('product_id')
                     ->relationship('product', 'name')
+                    ->label('Produk')
                     ->nullable(),
-                TextInput::make('title')->required(),
-                Textarea::make('message')->required(),
-                Toggle::make('is_read')->default(false),
+                TextInput::make('title')
+                    ->label('Judul')
+                    ->required(),
+                Textarea::make('message')
+                    ->label('Pesan')
+                    ->required(),
+                Toggle::make('is_read')
+                    ->label('Sudah Dibaca?')
+                    ->default(false),
             ]);
     }
 
@@ -43,11 +54,20 @@ class NotificationResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('user.name')->sortable()->searchable(),
-                TextColumn::make('product.name')->sortable()->searchable(),
-                TextColumn::make('title'),
-                TextColumn::make('message')->limit(50),
-                BooleanColumn::make('is_read'),
+                TextColumn::make('role')->label('Role'),
+                TextColumn::make('product.name')
+                    ->label('Produk')
+                    ->default('-')
+                    ->getStateUsing(fn ($record) => $record->product?->name ?? '-'),
+                TextColumn::make('title')->label('Judul'),
+                TextColumn::make('message')->label('Pesan'),
+                BooleanColumn::make('is_read')->label('Sudah Dibaca?'),
+                TextColumn::make('users_count')
+                    ->label('Jumlah Pengguna')
+                    ->getStateUsing(fn ($record) => $record->users()->count()),
+            ])
+            ->filters([
+                //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

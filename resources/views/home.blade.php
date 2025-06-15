@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TNDH+ Food - Authentic Indonesian Cuisine</title>
+  <title>TNDH+ Food</title>
   <meta name="description" content="Enjoy delicious Indonesian dishes at TNDH+ Food. Order online or dine in for a memorable culinary experience.">
   <meta name="keywords" content="TNDH+ Food, restaurant, Indonesian cuisine, online ordering, menu, Bandung">
 
@@ -38,7 +38,7 @@
         <ul>
           <li><a class="nav-link scrollto active" href="#hero">Beranda</a></li>
           <li><a class="nav-link scrollto" href="#about">Tentang</a></li>
-          <li><a class="nav-link scrollto" href="#features">Menu</a></li>
+          <li><a class="nav-link scrollto" href="#features">Keunggulan</a></li>
           <li><a class="nav-link scrollto" href="#pricing">Promosi</a></li>
           <li><a class="nav-link scrollto" href="#contact">Kontak</a></li>
           <li><a href="/admin/login">Login</a></li>
