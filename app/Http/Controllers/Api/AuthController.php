@@ -15,7 +15,13 @@ class AuthController extends Controller
     /**
      * Register a new user.
      */
-    public function register(Request $request)
+     public function index(User $user)
+    {
+        $user = User::where('id',$user);
+        return response()->json($user);
+    }
+    
+     public function register(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
@@ -38,14 +44,11 @@ class AuthController extends Controller
                 'password' => Hash::make($request->password),
             ]);
 
-            $token = $user->createToken('auth_token')->plainTextToken;
-
             return response()->json([
                 'status' => 'success',
                 'message' => 'User registered successfully',
                 'data' => [
-                    'user' => $user,
-                    'token' => $token
+                    'user' => $user
                 ]
             ], 201);
         } catch (Exception $e) {

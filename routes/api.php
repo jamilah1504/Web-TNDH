@@ -25,15 +25,18 @@ use App\Http\Controllers\Api\OrderController;
 // Authentication Routes
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
+Route::get('/user/{user}', [AuthController::class, 'index']);
 
 // Protected Routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
+    // Order Routes
     
 });
-// Order Routes
 // Order routes
-Route::get('/orders', [OrderController::class, 'orderIndex']);
+Route::get('/order/{user}', [OrderController::class, 'index']);
+Route::get('/order-detail/{order}', [OrderController::class, 'show']);
+Route::get('/orders/user/{users}', [OrderController::class, 'getByUser']);
 Route::post('/orders', [OrderController::class, 'orderStore']);
 Route::put('/orders/{id}', [OrderController::class, 'orderUpdate']);
 Route::delete('/orders/{id}', [OrderController::class, 'orderDestroy']);

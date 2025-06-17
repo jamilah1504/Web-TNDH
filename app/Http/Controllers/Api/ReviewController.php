@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Review; // Assuming Review model exists
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Exception;
@@ -16,15 +16,15 @@ class ReviewController extends Controller
     public function index()
     {
         try {
-            $Reviews = Review::all();
+            $reviews = Review::all();
             return response()->json([
                 'status' => 'success',
-                'data' => $Reviews
+                'data' => $reviews
             ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to fetch Reviews: ' . $e->getMessage()
+                'message' => 'Failed to fetch reviews: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -36,10 +36,10 @@ class ReviewController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'price' => 'required|numeric|min:0',
-                'stock' => 'required|integer|min:0'
+                'product_id' => 'required|integer|exists:products,id',
+                'order_item_id' => 'required|integer',
+                'rating' => 'required|integer|min:0|max:10',
+                'comment' => 'nullable|string'
             ]);
 
             if ($validator->fails()) {
@@ -50,22 +50,40 @@ class ReviewController extends Controller
                 ], 422);
             }
 
-            $Review = Review::create($request->only([
-                'name',
-                'description',
-                'price',
-                'stock'
-            ]));
+            $userId = 1;
+
+            // Check for duplicate order_item_id with is_approved = 1
+            $existingReview = Review::where('id_orderItems', $request->order_item_id)
+                ->where('is_approved', 1)
+                ->first();
+
+            if ($existingReview) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Review for this order item already exists and is approved, duplicate not allowed'
+                ], 409); // 409 Conflict for duplicate resource
+            }
+
+            $review = Review::create([
+                'user_id' => $userId,
+                'product_id' => $request->product_id,
+                'id_orderItems' => $request->order_item_id,
+                'rating' => $request->rating,
+                'comment' => $request->comment,
+                'is_approved' => $request->is_approved ?? 1,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Review created successfully',
-                'data' => $Review
+                'data' => $review
             ], 201);
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to create Review: ' . $e->getMessage()
+                'message' => 'Failed to create review: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -76,10 +94,10 @@ class ReviewController extends Controller
     public function show(string $id)
     {
         try {
-            $Review = Review::findOrFail($id);
+            $review = Review::findOrFail($id);
             return response()->json([
                 'status' => 'success',
-                'data' => $Review
+                'data' => $review
             ], 200);
         } catch (Exception $e) {
             return response()->json([
@@ -96,10 +114,12 @@ class ReviewController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'name' => 'sometimes|string|max:255',
-                'description' => 'nullable|string',
-                'price' => 'sometimes|numeric|min:0',
-                'stock' => 'sometimes|integer|min:0'
+                'user_id' => 'sometimes|integer|exists:users,id',
+                'product_id' => 'sometimes|integer|exists:products,id',
+                'id_orderitems' => 'sometimes|integer|exists:orderitems,id',
+                'rating' => 'sometimes|integer|min:0|max:10',
+                'comment' => 'nullable|string',
+                'is_approved' => 'sometimes|boolean'
             ]);
 
             if ($validator->fails()) {
@@ -110,23 +130,26 @@ class ReviewController extends Controller
                 ], 422);
             }
 
-            $Review = Review::findOrFail($id);
-            $Review->update($request->only([
-                'name',
-                'description',
-                'price',
-                'stock'
-            ]));
+            $review = Review::findOrFail($id);
+            $review->update([
+                'user_id' => $request->user_id ?? $review->user_id,
+                'product_id' => $request->product_id ?? $review->product_id,
+                'id_orderitems' => $request->id_orderitems ?? $review->id_orderitems,
+                'rating' => $request->rating ?? $review->rating,
+                'comment' => $request->comment ?? $review->comment,
+                'is_approved' => $request->is_approved ?? $review->is_approved,
+                'updated_at' => now()
+            ]);
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Review updated successfully',
-                'data' => $Review
+                'data' => $review
             ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to update Review: ' . $e->getMessage()
+                'message' => 'Failed to update review: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -137,8 +160,8 @@ class ReviewController extends Controller
     public function destroy(string $id)
     {
         try {
-            $Review = Review::findOrFail($id);
-            $Review->delete();
+            $review = Review::findOrFail($id);
+            $review->delete();
 
             return response()->json([
                 'status' => 'success',
@@ -147,7 +170,7 @@ class ReviewController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to delete Review: ' . $e->getMessage()
+                'message' => 'Failed to delete review: ' . $e->getMessage()
             ], 500);
         }
     }

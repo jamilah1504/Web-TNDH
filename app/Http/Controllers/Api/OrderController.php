@@ -11,37 +11,98 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
-    public function index(Request $request)
+    public function index(User $user): JsonResponse
     {
         try {
-            // Fetch all products with their associated categories
-            $products = Product::with('Category')->get();
+            // Ambil semua order milik user dengan eager loading relasi orderItems
+            $orders = Order::where('user_id', $user->id)
+                ->with(['orderItems.product']) // Eager load orderItems dan product
+                ->get();
 
-            // Fetch all categories
-            $categories = Category::all();
-
-            // Check if data exists
-            if ($products->isEmpty() && $categories->isEmpty()) {
+            // Jika tidak ada order, kembalikan response kosong
+            if ($orders->isEmpty()) {
                 return response()->json([
-                    'message' => 'No products or categories found',
-                    'products' => [],
-                    'categories' => []
+                    'message' => 'No orders found for this user',
+                    'data' => []
                 ], 200);
             }
 
             return response()->json([
-                'message' => 'Data retrieved successfully',
-                'products' => $products,
-                'categories' => $categories
+                'message' => 'Orders retrieved successfully',
+                'data' => $orders // Secara otomatis menyertakan orderItems karena eager loading
             ], 200);
+
         } catch (\Exception $e) {
+            \Log::error("Error fetching orders for user ID {$user->id}: " . $e->getMessage());
             return response()->json([
                 'message' => 'An error occurred while retrieving data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function show(Order $order): JsonResponse
+    {
+        try {
+            // Model $order sudah otomatis ditemukan oleh Laravel.
+            // Jika ID tidak ada, Laravel akan otomatis mengembalikan 404 Not Found.
+            // Kita hanya perlu memuat relasi yang dibutuhkan.
+            // $order->load('orderItems.product.category', 'payment');
+            
+            $order_detail = OrderItem::where('order_id', $order->id)
+            ->get();
+
+
+            return response()->json([
+                'message' => 'Order retrieved successfully',
+                'data' => $order_detail
+            ], 200);
+
+        } catch (\Exception $e) {
+            // Log::error("Error fetching order with ID {$order->id}: " . $e->getMessage());
+            return response()->json([
+                'message' => 'An error occurred while retrieving the order',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Menampilkan semua order milik satu user.
+     * Menggunakan Route Model Binding untuk user.
+     * Endpoint: GET /api/users/{user}/orders
+     */
+    public function getByUser(User $user): JsonResponse
+    {
+        try {
+            // Model $user sudah ditemukan oleh Laravel.
+            // Ambil semua order yang memiliki user_id dari user tersebut.
+            $orders = Order::where('user_id', $user->id)
+                            ->latest()
+                            ->get();
+
+            if ($orders->isEmpty()) {
+                return response()->json([
+                    'message' => 'No orders found for this user',
+                    'data' => []
+                ], 200);
+            }
+
+            return response()->json([
+                'message' => "Orders for user '{$user->name}' retrieved successfully",
+                'data' => $orders
+            ], 200);
+
+        } catch (\Exception $e) {
+            // Log::error("Error fetching orders for user ID {$user->id}: " . $e->getMessage());
+            return response()->json([
+                'message' => 'An error occurred while retrieving user orders',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -246,7 +307,7 @@ class OrderController extends Controller
             //     return response()->json(['message' => 'Unauthorized'], 401);
             // }
 
-            $orders = Order::where('user_id', $user)->with('orderItems.product.Category', 'payment')->get();
+            $orders = Order::where('user_id', $user)->with('orderItems.product.category', 'payment')->get();
 
             return response()->json([
                 'message' => 'Orders retrieved successfully',
