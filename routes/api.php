@@ -64,6 +64,9 @@ Route::apiResource('notifications', NotifController::class);
 Route::apiResource('products', ProductController::class);
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('sliders', SliderController::class);
+Route::apiResource('notifications', NotifController::class);
+Route::apiResource('reviews', ReviewController::class);
+Route::apiResource('orders', OrderController::class);
 
 Route::post('/create-transaction', [MidtransController::class, 'createTransaction']);
 Route::post('/midtrans-notification', [MidtransController::class, 'notificationHandler']);

@@ -13,7 +13,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Toggle;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BooleanColumn;
 use Filament\Tables\Columns\ImageColumn;
 
 class ProductResource extends Resource
@@ -58,7 +57,12 @@ class ProductResource extends Resource
                         'out_of_stock' => 'Habis'
                     ])
                     ->default('available')
-                    ->required(),
+                    ->required()
+                    ->rules(['in:available,out_of_stock'])
+                    ->live() // Make reactive for form interactions
+                    ->afterStateUpdated(function ($state) {
+                        \Illuminate\Support\Facades\Log::info('Stock Status updated in form: ' . $state);
+                    }),
                 FileUpload::make('image')
                     ->label('Gambar Produk')
                     ->image()
@@ -66,8 +70,12 @@ class ProductResource extends Resource
                     ->nullable()
                     ->default('default.jpg'),
                 Toggle::make('is_available')
-                    ->label('Tersedia?')
-                    ->default(true),
+                    ->label('Masih Dijual?')
+                    ->default(true)
+                    ->live() // Make reactive for form interactions
+                    ->afterStateUpdated(function ($state) {
+                        \Illuminate\Support\Facades\Log::info('Is Available updated in form: ' . $state);
+                    }),
             ]);
     }
 
@@ -89,19 +97,22 @@ class ProductResource extends Resource
                     ->label('Harga Diskon')
                     ->formatStateUsing(fn ($state) => $state ? 'Rp ' . number_format($state, 0, ',', '.') : '-')
                     ->sortable(),
-                TextColumn::make('stock_status')
-                    ->label('Status Stok')
-                    ->formatStateUsing(fn ($state) => $state === 'available' ? 'Tersedia' : 'Habis'),
+                TextColumn::make('stock_status_display')
+                    ->label('Status Stok'),
+                TextColumn::make('is_available_display')
+                    ->label('Status Penjualan'),
                 ImageColumn::make('image')
                     ->label('Gambar'),
-                BooleanColumn::make('is_available')
-                    ->label('Tersedia?'),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->after(function () {
+                        // Force table refresh after edit
+                        \Illuminate\Support\Facades\Log::info('Product edited, table should refresh');
+                    }),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([

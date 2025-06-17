@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PaymentResource\Pages;
 use App\Models\Payment;
 use Filament\Forms;
+use Filament\Tables\Actions\Action;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Forms\Components\Select;
@@ -53,11 +54,20 @@ class PaymentResource extends Resource
                 TextColumn::make('payment_date')->dateTime(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            // Action::make('print')
+            //     ->label('Print')
+            //     ->icon('heroicon-o-printer')
+            //     ->url(fn ($record): string => route('payment.print', $record->id))
+            //         ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
+                // Action::make('generate_report')
+                //     ->label('Laporan Pemasukan')
+                //     ->icon('heroicon-o-document-report')
+                //     ->action(function () {
+                //         return redirect()->route('payment.income.report');
+                //     }),
             ]);
     }
 

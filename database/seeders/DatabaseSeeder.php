@@ -61,10 +61,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Notification::create([
-            'user_id' => $user->id,
-            'product_id' => $product->id,
-            'title' => 'Discount Offer',
-            'message' => 'Get 10% off Nasi Goreng!',
+            'role' => 'admin',
+            'title' => 'Test Notifikasi',
+            'message' => 'Ini adalah notifikasi untuk admin.',
+            'is_read' => false,
         ]);
 
         Review::create([
