@@ -30,10 +30,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
 
     // Order Routes
-    Route::apiResource('orders', OrderController::class);
 
     // Review Routes
-    Route::apiResource('reviews', ReviewController::class);
 
     // Payment Routes
     Route::apiResource('payments', PaymentController::class);
@@ -46,3 +44,5 @@ Route::apiResource('products', ProductController::class);
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('sliders', SliderController::class);
 Route::apiResource('notifications', NotifController::class);
+Route::apiResource('reviews', ReviewController::class);
+Route::apiResource('orders', OrderController::class);

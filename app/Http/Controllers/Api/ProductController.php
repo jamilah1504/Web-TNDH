@@ -22,9 +22,10 @@ class ProductController extends Controller
                 'data' => $products
             ], 200);
         } catch (Exception $e) {
+            Log::error('Failed to fetch products: ' . $e->getMessage());
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to fetch products: ' . $e->getMessage()
+                'message' => 'Failed to fetch products'
             ], 500);
         }
     }

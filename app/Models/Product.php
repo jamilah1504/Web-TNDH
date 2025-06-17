@@ -13,7 +13,7 @@ class Product extends Model
     protected $primaryKey = 'id';
     protected $fillable = [
         'id_category', 'name', 'description', 'excerpt', 'price', 'discount_price',
-        'stock_quantity', 'image', 'is_available', 'stock_status',
+        'stock_quantity', 'image', 'is_available', 'stock_status', 'rating', 'sold',
     ];
 
     public function category()
@@ -47,4 +47,5 @@ class Product extends Model
             Log::info('Updating product: ' . $product->id . ', Stock Status: ' . $product->stock_status . ', Is Available: ' . $product->is_available);
         });
     }
+
 }

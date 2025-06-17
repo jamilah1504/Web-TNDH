@@ -29,4 +29,16 @@ class Order extends Model
     {
         return $this->hasOne(Payment::class);
     }
+
+    protected static function booted()
+{
+    static::updated(function ($order) {
+        if ($order->status === 'completed') {
+            foreach ($order->products as $product) {
+                $product->increment('sold', $product->pivot->quantity);
+                $product->save();
+            }
+        }
+    });
+}
 }

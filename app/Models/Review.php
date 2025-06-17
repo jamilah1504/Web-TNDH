@@ -22,4 +22,14 @@ class Review extends Model
     {
         return $this->belongsTo(Product::class);
     }
+    protected static function booted()
+{
+    static::updated(function ($review) {
+        if ($review->isDirty('is_approved') && $review->is_approved) {
+            $product = $review->product;
+            $rating = $product->reviews()->where('is_approved', true)->avg('rating');
+            $product->update(['rating' => $rating ?? 0]);
+        }
+    });
+}
 }
