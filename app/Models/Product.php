@@ -21,10 +21,10 @@ class Product extends Model
         return $this->belongsTo(Category::class, 'id_category', 'id_category');
     }
 
-    public function reviews()
-    {
-        return $this->hasMany(Review::class);
-    }
+public function reviews()
+{
+    return $this->hasMany(Review::class, 'product_id');
+}
 
     public function getEffectivePriceAttribute()
     {

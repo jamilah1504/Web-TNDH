@@ -56,4 +56,8 @@ class OrderItem extends Model
     {
         return 'Rp ' . number_format($this->subtotal, 2, ',', '.');
     }
+     public function review()
+    {
+        return $this->hasOne(Review::class, 'id_orderItems');
+    }
 }

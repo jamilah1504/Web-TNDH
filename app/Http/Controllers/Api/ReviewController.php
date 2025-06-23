@@ -7,105 +7,126 @@ use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 
 class ReviewController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        try {
-            $reviews = Review::all();
-            return response()->json([
-                'status' => 'success',
-                'data' => $reviews
-            ], 200);
-        } catch (Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to fetch reviews: ' . $e->getMessage()
-            ], 500);
+    // public function index()
+    // {
+    //     try {
+    //         $reviews = Review::all();
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'data' => $reviews
+    //         ], 200);
+    //     } catch (Exception $e) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Failed to fetch reviews: ' . $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    public function index(Request $request) // Tambahkan Request $request
+{
+    try {
+        // Mulai query builder
+        $query = Review::query();
+
+        // Tambahkan eager loading untuk relasi user
+        // Ini akan mengambil data user yang membuat review secara efisien
+        $query->with('user:id,name,photo_url'); // Ambil hanya kolom yg dibutuhkan
+
+        // Cek jika ada parameter 'product_id' di request
+        if ($request->has('product_id')) {
+            $query->where('product_id', $request->product_id);
         }
+
+        // Cek jika ada parameter 'is_approved' di request
+        if ($request->has('is_approved')) {
+            $query->where('is_approved', $request->is_approved);
+        }
+
+        // Urutkan berdasarkan yang terbaru
+        $reviews = $query->latest()->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $reviews
+        ], 200);
+
+    } catch (Exception $e) {
+        report($e); // Laporkan error untuk debugging
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to fetch reviews: ' . $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'product_id' => 'required|integer|exists:products,id',
-                'order_item_id' => 'required|integer',
-                'rating' => 'required|integer|min:0|max:10',
-                'comment' => 'nullable|string'
-            ]);
+    // app/Http/Controllers/ReviewController.php
 
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Validation failed',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
+public function store(Request $request)
+{
+    try {
+        $validator = Validator::make($request->all(), [
+            'product_id' => 'required|integer|exists:products,id',
+            'user_id' => 'required|integer|exists:users,id',
+            'id_orderItems' => 'required|integer|exists:order_items,id', // Pastikan exists di tabel yang benar
+            'rating' => 'required|integer|min:1|max:5', // Rating biasanya 1-5
+            'comment' => 'nullable|string' // Komentar bisa jadi opsional
+        ]);
 
-            $userId = 1;
-
-            // Check for duplicate order_item_id with is_approved = 1
-            $existingReview = Review::where('id_orderItems', $request->order_item_id)
-                ->where('is_approved', 1)
-                ->first();
-
-            if ($existingReview) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Review for this order item already exists and is approved, duplicate not allowed'
-                ], 409); // 409 Conflict for duplicate resource
-            }
-
-            $review = Review::create([
-                'user_id' => $userId,
-                'product_id' => $request->product_id,
-                'id_orderItems' => $request->order_item_id,
-                'rating' => $request->rating,
-                'comment' => $request->comment,
-                'is_approved' => $request->is_approved ?? 1,
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Review created successfully',
-                'data' => $review
-            ], 201);
-        } catch (Exception $e) {
+        if ($validator->fails()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to create review: ' . $e->getMessage()
-            ], 500);
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
         }
+
+        $user = Auth::user();
+
+        // Gunakan updateOrCreate untuk membuat review baru atau update jika sudah ada
+        // Kriteria pencarian: kombinasi user_id dan id_orderItems harus unik
+        $review = Review::updateOrCreate(
+            [
+                'user_id' => $request->user_id,
+                'id_orderItems' => $request->id_orderItems
+            ],
+            [
+                'product_id' => $request->product_id,
+                'rating' => $request->rating,
+                'comment' => $request->comment,
+                'is_approved' => 1, // Default ke 1 atau sesuai logika bisnis Anda
+            ]
+        );
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Review submitted successfully', // Pesan yang lebih umum
+            'data' => $review
+        ], 201); // 201 Created
+
+    } catch (Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to submit review: ' . $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-        try {
-            $review = Review::findOrFail($id);
-            return response()->json([
-                'status' => 'success',
-                'data' => $review
-            ], 200);
-        } catch (Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Review not found'
-            ], 404);
-        }
-    }
+    // app/Http/Controllers/Api/ReviewController.php
+
 
     /**
      * Update the specified resource in storage.

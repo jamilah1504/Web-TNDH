@@ -50,10 +50,10 @@ class ReviewResource extends Resource
                 TextColumn::make('comment')->limit(50),
                 BooleanColumn::make('is_approved')->label('Approved'),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
+            // ->actions([
+            //     Tables\Actions\EditAction::make(),
+            //     Tables\Actions\DeleteAction::make(),
+            // ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
@@ -62,8 +62,7 @@ class ReviewResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListReviews::route('/'),
-            'edit' => Pages\EditReview::route('/{record}/edit'),
+            'index' => Pages\ListReviews::route('/')
         ];
     }
 

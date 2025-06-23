@@ -22,8 +22,9 @@ class OrderController extends Controller
         try {
             // Ambil semua order milik user dengan eager loading relasi orderItems
             $orders = Order::where('user_id', $user->id)
-                ->with(['orderItems.product']) // Eager load orderItems dan product
-                ->get();
+               ->with(['orderItems.product'])
+               ->orderBy('created_at', 'desc') // 'desc' untuk descending (terbaru)
+               ->get();
 
             // Jika tidak ada order, kembalikan response kosong
             if ($orders->isEmpty()) {
@@ -47,7 +48,7 @@ class OrderController extends Controller
         }
     }
 
-    public function show(Order $order): JsonResponse
+     public function show(Order $order): JsonResponse
     {
         try {
             // Model $order sudah otomatis ditemukan oleh Laravel.
@@ -56,6 +57,7 @@ class OrderController extends Controller
             // $order->load('orderItems.product.category', 'payment');
             
             $order_detail = OrderItem::where('order_id', $order->id)
+            ->with('review')
             ->get();
 
 
@@ -72,6 +74,7 @@ class OrderController extends Controller
             ], 500);
         }
     }
+
 
     /**
      * Menampilkan semua order milik satu user.
@@ -112,11 +115,10 @@ class OrderController extends Controller
     public function cartIndex(Request $request)
     {
         try {
-            $user = 1;
-            // $user = Auth::user();
-            // if (!$user) {
-            //     return response()->json(['message' => 'Unauthorized'], 401);
-            // }
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['message' => 'Unauthorized'], 401);
+            }
 
             $cartItems = Cart::where('user_id', $user)->with('product.category')->get();
 
@@ -272,11 +274,11 @@ class OrderController extends Controller
     public function cartDestroy($id)
 {
     try {
-        // $user = Auth::user();
-        // if (!$user) {
-        //     return response()->json(['message' => 'Unauthorized'], 401);
-        // }
-        $userId = 1; // Temporary, replace with Auth::id()
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+        $userId = $user->id; // Temporary, replace with Auth::id()
 
         $cartItem = Cart::where('id', $id)->where('user_id', $userId)->first();
         if (!$cartItem) {
@@ -301,13 +303,13 @@ class OrderController extends Controller
     public function orderIndex(Request $request)
     {
         try {
-            // $user = Auth::user();
-            $user = 1;
-            // if (!$user) {
-            //     return response()->json(['message' => 'Unauthorized'], 401);
-            // }
+            $user = Auth::user();
+            //$user = 1;
+            if (!$user) {
+                return response()->json(['message' => 'Unauthorized'], 401);
+            }
 
-            $orders = Order::where('user_id', $user)->with('orderItems.product.category', 'payment')->get();
+            $orders = Order::where('user_id', $user->id)->with('orderItems.product.category', 'payment')->get();
 
             return response()->json([
                 'message' => 'Orders retrieved successfully',
@@ -334,11 +336,11 @@ class OrderController extends Controller
         }
 
         try {
-            $user = 1;
-            // $user = Auth::user();
-            // if (!$user) {
-            //     return response()->json(['message' => 'Unauthorized'], 401);
-            // }
+            //$user = 1;
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['message' => 'Unauthorized'], 401);
+            }
 
             $totalAmount = 0;
             $items = $request->items;
@@ -354,7 +356,7 @@ class OrderController extends Controller
 
             // Create order
             $order = Order::create([
-                'user_id' => $user,
+                'user_id' => $user->id,
                 'total_amount' => $totalAmount,
                 'status' => 'pending'
             ]);
@@ -499,11 +501,11 @@ class OrderController extends Controller
         }
 
         try {
-            $user = 1;
-            // $user = Auth::user();
-            // if (!$user) {
-            //     return response()->json(['message' => 'Unauthorized'], 401);
-            // }
+            //$user = 1;
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['message' => 'Unauthorized'], 401);
+            }
 
             // Generate unique order ID with ORD- prefix
             $orderId = 'ORD-' . strtoupper(uniqid());
@@ -516,7 +518,7 @@ class OrderController extends Controller
             // Create order
             $order = Order::create([
                 'order_id' => $orderId,
-                'user_id' => $user,
+                'user_id' => $user->id,
                 'alamat' => $request->customer['address'],
                 'telepon' => $request->customer['phone'],
                 'total_harga' => $request->order_summary['total_amount'],

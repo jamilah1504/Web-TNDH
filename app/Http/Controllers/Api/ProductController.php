@@ -74,19 +74,25 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Product $product) // Menggunakan Route Model Binding
     {
         try {
-            $product = Product::findOrFail($id);
+            // Dengan Route Model Binding, Laravel otomatis melakukan findOrFail.
+            // Kita bisa langsung memuat relasi di sini.
+            $product->load(['category', 'reviews' => function ($query) {
+                $query->where('is_approved', 1)->with('user:id,name');
+            }]);
+
             return response()->json([
                 'status' => 'success',
                 'data' => $product
-            ], 200);
-        } catch (Exception $e) {
+            ]);
+
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Product not found'
-            ], 404);
+                'message' => 'Gagal memuat produk: ' . $e->getMessage()
+            ], 500);
         }
     }
 

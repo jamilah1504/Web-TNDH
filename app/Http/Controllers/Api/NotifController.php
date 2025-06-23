@@ -142,17 +142,24 @@ class NotifController extends Controller
     public function destroy(string $id)
     {
         try {
+            // Cari notifikasi berdasarkan ID, jika tidak ketemu akan error (findOrFail)
             $notification = Notification::findOrFail($id);
-            $notification->delete();
+
+            // Ubah is_read menjadi true dan simpan ke database
+            $notification->update(['is_read' => true]);
+            // Alternatif lain:
+            // $notification->is_read = 1;
+            // $notification->save();
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Notification deleted successfully'
+                'message' => 'Notifikasi berhasil ditandai sebagai telah dibaca' // Pesan diubah
             ], 200);
+
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to delete notification: ' . $e->getMessage()
+                'message' => 'Gagal menandai notifikasi: ' . $e->getMessage() // Pesan diubah
             ], 500);
         }
     }

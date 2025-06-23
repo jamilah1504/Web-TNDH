@@ -17,8 +17,8 @@ class AuthController extends Controller
      */
      public function index(User $user)
     {
-        $user = User::where('id',$user);
-        return response()->json($user);
+        $users = User::where('id',$user->id)->get();
+        return response()->json($users);
     }
     
      public function register(Request $request)
@@ -121,6 +121,49 @@ class AuthController extends Controller
                 'status' => 'error',
                 'message' => 'Failed to log out: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function alamat(Request $request, string $id)
+    {
+        // Langkah 1: Validasi data yang masuk dari request
+        $validator = Validator::make($request->all(), [
+            'address' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:100',
+            'name'  => 'nullable|string|max:100',
+            'email' => 'nullable|email',
+        ]);
+
+        // Jika validasi gagal, kembalikan response error
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Data yang diberikan tidak valid.',
+                'errors'  => $validator->errors()
+            ], 422); // 422 Unprocessable Entity
+        }
+
+        try {
+            // Langkah 2: Cari pengguna berdasarkan ID
+            // findOrFail akan otomatis memberikan error 404 jika user tidak ditemukan
+            $user = User::findOrFail($id);
+
+            // Langkah 3: Update data pengguna dengan data yang sudah divalidasi
+            $user->update($validator->validated());
+
+            // Langkah 4: Kembalikan response sukses
+            return response()->json([
+                'status'  => 'success',
+                'message' => 'Alamat pengguna berhasil diperbarui.',
+                'data'    => $user // Opsional: kembalikan data user yang sudah diupdate
+            ], 200); // 200 OK
+
+        } catch (Exception $e) {
+            // Tangani error lain yang mungkin terjadi (misal: error database)
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Gagal memperbarui alamat: ' . $e->getMessage()
+            ], 500); // 500 Internal Server Error
         }
     }
 }

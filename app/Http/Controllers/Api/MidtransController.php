@@ -11,6 +11,7 @@ use Midtrans\Snap;
 use Midtrans\Notification;
 use App\Models\Order; // <-- Import model Order
 use App\Models\OrderItem; // <-- Import model OrderItem
+use App\Models\Payment;
 
 class MidtransController extends Controller
 {
@@ -59,6 +60,14 @@ class MidtransController extends Controller
                 'user_id' => $validatedData['customer']['user_id'],
                 'total_amount' => $validatedData['order_summary']['total_amount'],
                 'status' => 'pending', // <-- Status awal
+            ]);
+
+            Payment::create([
+                'order_id' => $orderId,
+                'user_id' => $validatedData['customer']['user_id'],
+                'amount' => $validatedData['order_summary']['total_amount'],
+                'status' => 'pending', // Always pending initially
+                'payment_date' => now(),
             ]);
 
             // 2. Simpan setiap item pesanan ke tabel order_items
@@ -125,9 +134,12 @@ class MidtransController extends Controller
 
             // 1. Cari pesanan di database berdasarkan ID
             $order = Order::find($orderId);
+            $payment = Payment::where('order_id', $orderId);
             if (!$order) {
                 return response()->json(['message' => 'Order not found'], 404);
             }
+
+            
 
             // 2. Lakukan verifikasi signature key (SANGAT PENTING UNTUK KEAMANAN)
             $signatureKey = hash('sha512', $orderId . $notif->status_code . $notif->gross_amount . config('services.midtrans.serverKey'));
@@ -140,27 +152,34 @@ class MidtransController extends Controller
             if ($transactionStatus == 'capture') {
                 if ($fraudStatus == 'challenge') {
                     // TODO: Set your transaction status to 'challenge'
-                    $order->update(['status' => 'challenge']);
+                    $order->update(['status' => 'Diproses']);
+                    $payment->update(['status' => 'complated']);
                 } else if ($fraudStatus == 'accept') {
                     // TODO: Set your transaction status to 'success'
-                    $order->update(['status' => 'success']);
+                    $order->update(['status' => 'Diproses']);
+                    $payment->update(['status' => 'complated']);
                 }
             } else if ($transactionStatus == 'settlement') {
                 // TODO: Set your transaction status to 'settlement' (pembayaran berhasil)
-                $order->update(['status' => 'settlement']);
+                $order->update(['status' => 'Diproses']);
+                $payment->update(['status' => 'complated']);
+
                 // Di sini Anda bisa menambahkan logika lain, seperti mengurangi stok barang
             } else if ($transactionStatus == 'pending') {
                 // TODO: Set your transaction status to 'pending'
                 $order->update(['status' => 'pending']);
             } else if ($transactionStatus == 'deny') {
                 // TODO: Set your transaction status to 'denied'
-                $order->update(['status' => 'denied']);
+                $order->update(['status' => 'failed']);
+                $payment->update(['status' => 'failed']);
+
             } else if ($transactionStatus == 'expire') {
                 // TODO: Set your transaction status to 'expired'
-                $order->update(['status' => 'expired']);
+                $order->update(['status' => 'failed']);
             } else if ($transactionStatus == 'cancel') {
                 // TODO: Set your transaction status to 'cancelled'
-                $order->update(['status' => 'cancelled']);
+                $order->update(['status' => 'failed']);
+                $payment->update(['status' => 'failed']);
             }
 
             return response()->json(['message' => 'Notification handled successfully'], 200);
@@ -171,39 +190,43 @@ class MidtransController extends Controller
         }
     }
     public function updateStatusFromClient(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'order_id' => 'required|string|exists:orders,id',
-            'transaction_status' => 'required|string',
-        ]);
+        {
+            $validator = Validator::make($request->all(), [
+                'order_id' => 'required|string|exists:orders,id',
+                'transaction_status' => 'required|string',
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 400);
-        }
-
-        try {
-            // Cari pesanan berdasarkan order_id
-            $order = Order::find($request->order_id);
-
-            // Cek untuk menghindari menimpa status yang sudah final dari webhook
-            // Contoh: Jika status sudah 'settlement', jangan diubah lagi jadi 'pending'
-            if ($order->status === 'settlement' || $order->status === 'capture') {
-                 return response()->json(['message' => 'Order status is final and cannot be changed from client.'], 409); // 409 Conflict
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 400);
             }
-            
-            // Update status pesanan
-            $order->update([
-                'status' => $request->transaction_status
-            ]);
 
-            return response()->json([
-                'message' => 'Order status updated successfully for quick feedback.',
-                'data' => $order
-            ]);
+            try {
+                // Cari pesanan berdasarkan order_id
+                $order = Order::find($request->order_id);
+                
+                
+                // Cek untuk menghindari menimpa status yang sudah final dari webhook
+                // Contoh: Jika status sudah 'settlement', jangan diubah lagi jadi 'pending'
+                if ($order->status === 'settlement' || $order->status === 'capture') {
+                    return response()->json(['message' => 'Order status is final and cannot be changed from client.'], 409); // 409 Conflict
+                }
+                
+                // Update status pesanan
+                $order->update([
+                    'status' => $request->transaction_status
+                ]);
 
-        } catch (\Exception $e) {
-            \Log::error('Client Status Update Error: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to update order status.'], 500);
+                return response()->json([
+                    'message' => 'Order status and payment updated successfully for quick feedback.',
+                    'data' => [
+                        'order' => $order,
+                        'payment' => $payment
+                    ]
+                ]);
+
+            } catch (\Exception $e) {
+                \Log::error('Client Status Update Error: ' . $e->getMessage());
+                return response()->json(['error' => 'Failed to update order status or create payment.'], 500);
+            }
         }
-    }
 }
