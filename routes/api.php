@@ -22,52 +22,58 @@ use App\Http\Controllers\Api\OrderController;
 |
 */
 
-// Authentication Routes
-Route::post('register', [AuthController::class, 'register']);
-Route::post('login', [AuthController::class, 'login']);
-Route::get('/user/{user}', [AuthController::class, 'index']);
-
-// Protected Routes (require authentication)
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('logout', [AuthController::class, 'logout']);
-    // Order Routes
-    
+// Authentication Routes (Public)
+Route::prefix('auth')->group(function () {
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login', [AuthController::class, 'login']);
 });
-// Order routes
-Route::get('/order/{user}', [OrderController::class, 'index']);
-Route::get('/order-detail/{order}', [OrderController::class, 'show']);
-Route::get('/orders/user/{users}', [OrderController::class, 'getByUser']);
-Route::post('/orders', [OrderController::class, 'orderStore']);
-Route::put('/orders/{id}', [OrderController::class, 'orderUpdate']);
-Route::delete('/orders/{id}', [OrderController::class, 'orderDestroy']);
 
-// Payment routes
-Route::get('/payments', [OrderController::class, 'paymentIndex']);
-Route::post('/payments', [OrderController::class, 'paymentStore']);
-// Cart routes
-Route::get('/cart', [OrderController::class, 'cartIndex']);
-Route::post('/cart', [OrderController::class, 'cartStore']);
-Route::put('/cart/{id}', [OrderController::class, 'cartUpdate']);
-Route::get('/cart/{user_id}', [OrderController::class, 'cartDetail']);
-Route::delete('/cart/{id}', [OrderController::class, 'cartDestroy']);
+// Protected Routes (Require JWT Authentication)
+Route::middleware('auth:api')->group(function () {
+    // Authentication Routes
+    Route::prefix('auth')->group(function () {
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::get('me', [AuthController::class, 'me']);
+        Route::get('user/{id}', [AuthController::class, 'index']);
+    });
 
-// Review Routes
-Route::apiResource('reviews', ReviewController::class);
+    // Order Routes
+    Route::get('orders/user/{user}', [OrderController::class, 'getByUser']);
+    Route::post('orders', [OrderController::class, 'orderStore']);
+    Route::put('orders/{id}', [OrderController::class, 'orderUpdate']);
+    Route::delete('orders/{id}', [OrderController::class, 'orderDestroy']);
 
-// Payment Routes
-Route::apiResource('payments', PaymentController::class);
+    // Cart Routes
+    Route::get('cart', [OrderController::class, 'cartIndex']);
+    Route::post('cart', [OrderController::class, 'cartStore']);
+    Route::put('cart/{id}', [OrderController::class, 'cartUpdate']);
+    Route::get('cart/{user_id}', [OrderController::class, 'cartDetail']);
+    Route::delete('cart/{id}', [OrderController::class, 'cartDestroy']);
 
-// Notification Routes
-Route::apiResource('notifications', NotifController::class);
+    // Payment Routes
+    Route::get('payments', [OrderController::class, 'paymentIndex']);
+    Route::post('payments', [OrderController::class, 'paymentStore']);
 
-// Public Routes
-Route::apiResource('products', ProductController::class);
-Route::apiResource('categories', CategoryController::class);
-Route::apiResource('sliders', SliderController::class);
-Route::apiResource('notifications', NotifController::class);
-Route::apiResource('reviews', ReviewController::class);
-Route::apiResource('orders', OrderController::class);
+    // Review Routes (Authenticated users only)
+    Route::apiResource('reviews', ReviewController::class)->only(['store', 'update', 'destroy']);
 
-Route::post('/create-transaction', [MidtransController::class, 'createTransaction']);
-Route::post('/midtrans-notification', [MidtransController::class, 'notificationHandler']);
-Route::post('/orders/update-status', [MidtransController::class, 'updateStatusFromClient']);
+    // Notification Routes (Authenticated users only)
+    Route::apiResource('notifications', NotifController::class)->only(['store', 'update', 'destroy']);
+
+    // Payment Routes (Authenticated users only)
+    Route::apiResource('payments', PaymentController::class)->only(['store', 'update', 'destroy']);
+});
+
+// Public Routes (No Authentication Required)
+Route::get('order/{id}', [OrderController::class, 'show']); // Detail order (mungkin untuk admin atau publik)
+Route::apiResource('products', ProductController::class)->only(['index', 'show']);
+Route::apiResource('categories', CategoryController::class)->only(['index', 'show']);
+Route::apiResource('sliders', SliderController::class)->only(['index', 'show']);
+Route::apiResource('notifications', NotifController::class)->only(['index', 'show']);
+Route::apiResource('reviews', ReviewController::class)->only(['index', 'show']);
+Route::apiResource('orders', OrderController::class)->only(['index', 'show']);
+
+// Midtrans Routes (Payment Gateway)
+Route::post('create-transaction', [MidtransController::class, 'createTransaction']);
+Route::post('midtrans-notification', [MidtransController::class, 'notificationHandler']);
+Route::post('orders/update-status', [MidtransController::class, 'updateStatusFromClient']);

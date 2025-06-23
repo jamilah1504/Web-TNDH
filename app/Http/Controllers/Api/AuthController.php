@@ -9,25 +9,42 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Exception;
+use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
 {
     /**
+     * Get user by ID.
+     */
+    public function index($id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            return response()->json([
+                'status' => 'success',
+                'data' => $user
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User not found: ' . $e->getMessage()
+            ], 404);
+        }
+    }
+
+    /**
      * Register a new user.
      */
-     public function index(User $user)
-    {
-        $user = User::where('id',$user);
-        return response()->json($user);
-    }
-    
-     public function register(Request $request)
+    public function register(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:8',
+                'role' => 'nullable|string|in:user,admin', // Sesuaikan dengan role yang diizinkan
+                'phone' => 'nullable|string|max:15',
+                'is_active' => 'nullable|boolean',
             ]);
 
             if ($validator->fails()) {
@@ -42,13 +59,21 @@ class AuthController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
+                'role' => $request->role ?? 'user',
+                'phone' => $request->phone,
+                'is_active' => $request->is_active ?? true,
             ]);
+
+            $token = auth()->login($user);
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'User registered successfully',
                 'data' => [
-                    'user' => $user
+                    'user' => $user,
+                    'token' => $token,
+                    'token_type' => 'bearer',
+                    'expires_in' => auth()->factory()->getTTL() * 60
                 ]
             ], 201);
         } catch (Exception $e) {
@@ -78,28 +103,31 @@ class AuthController extends Controller
                 ], 422);
             }
 
-            if (!Auth::attempt($request->only('email', 'password'))) {
+            $credentials = $request->only('email', 'password');
+
+            if (!$token = auth()->attempt($credentials)) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Invalid credentials'
                 ], 401);
             }
 
-            $user = Auth::user();
-            $token = $user->createToken('auth_token')->plainTextToken;
+            $user = auth()->user();
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'User logged in successfully',
                 'data' => [
                     'user' => $user,
-                    'token' => $token
+                    'token' => $token,
+                    'token_type' => 'bearer',
+                    'expires_in' => auth()->factory()->getTTL() * 60
                 ]
             ], 200);
-        } catch (Exception $e) {
+        } catch (JWTException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to log in: ' . $e->getMessage()
+                'message' => 'Could not create token: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -107,11 +135,10 @@ class AuthController extends Controller
     /**
      * Log out a user.
      */
-    public function logout(Request $request)
+    public function logout()
     {
         try {
-            $request->user()->currentAccessToken()->delete();
-
+            auth()->logout();
             return response()->json([
                 'status' => 'success',
                 'message' => 'User logged out successfully'
@@ -120,6 +147,32 @@ class AuthController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to log out: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get authenticated user.
+     */
+    public function me()
+    {
+        try {
+            $user = auth()->user();
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Unauthorized'
+                ], 401);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $user
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve user: ' . $e->getMessage()
             ], 500);
         }
     }

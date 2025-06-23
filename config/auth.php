@@ -31,7 +31,7 @@ return [
     | users are actually retrieved out of your database or other storage
     | system used by the application. Typically, Eloquent is utilized.
     |
-    | Supported: "session"
+    | Supported: "session", "jwt"
     |
     */
 
@@ -41,7 +41,7 @@ return [
             'provider' => 'users',
         ],
         'api' => [
-            'driver' => 'sanctum',
+            'driver' => 'jwt',
             'provider' => 'users',
         ],
     ],
@@ -68,17 +68,12 @@ return [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
     ],
 
     /*
-    |--------------------------------------------------------------------------
+    |--------------------------------------------------------------------------|
     | Resetting Passwords
-    |--------------------------------------------------------------------------
+    |--------------------------------------------------------------------------|
     |
     | These configuration options specify the behavior of Laravel's password
     | reset functionality, including the table utilized for token storage
@@ -104,9 +99,9 @@ return [
     ],
 
     /*
-    |--------------------------------------------------------------------------
+    |--------------------------------------------------------------------------|
     | Password Confirmation Timeout
-    |--------------------------------------------------------------------------
+    |--------------------------------------------------------------------------|
     |
     | Here you may define the amount of seconds before a password confirmation
     | window expires and users are asked to re-enter their password via the
