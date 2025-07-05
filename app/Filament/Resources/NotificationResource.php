@@ -61,7 +61,7 @@ class NotificationResource extends Resource
                     ->getStateUsing(fn ($record) => $record->product?->name ?? '-'),
                 TextColumn::make('title')->label('Judul'),
                 TextColumn::make('message')->label('Pesan'),
-                BooleanColumn::make('is_read')->label('Sudah Dibaca?'),
+                // BooleanColumn::make('is_read')->label('Sudah Dibaca?'),
                 TextColumn::make('users_count')
                     ->label('Jumlah Pengguna')
                     ->getStateUsing(fn ($record) => $record->users()->count()),

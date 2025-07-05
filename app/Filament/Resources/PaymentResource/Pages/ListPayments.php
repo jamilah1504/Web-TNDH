@@ -13,15 +13,7 @@ class ListPayments extends ListRecords
 {
     protected static string $resource = PaymentResource::class;
 
-    protected function getHeaderWidgets(): array
-    {
-        // Mendaftarkan widget untuk ditampilkan di header halaman
-        return [
-            PaymentStatsOverview::class,
-            PaymentChart::class,
-            PaymentStatusChart::class,
-        ];
-    }
+    
 
     protected function getHeaderActions(): array
     {

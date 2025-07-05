@@ -66,7 +66,7 @@ class MidtransController extends Controller
                 'order_id' => $orderId,
                 'user_id' => $validatedData['customer']['user_id'],
                 'amount' => $validatedData['order_summary']['total_amount'],
-                'status' => 'pending', // Always pending initially
+                'status' => 'completed', // Always pending initially
                 'payment_date' => now(),
             ]);
 
@@ -229,4 +229,93 @@ class MidtransController extends Controller
                 return response()->json(['error' => 'Failed to update order status or create payment.'], 500);
             }
         }
+
+    // public function updateStatusFromClient(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'order_id' => 'required|string|exists:orders,id',
+    //         'transaction_status' => 'required|string',
+    //         // Fraud status bersifat opsional dari client, defaultnya 'accept'
+    //         'fraud_status' => 'sometimes|string', 
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json(['errors' => $validator->errors()], 400);
+    //     }
+
+    //     try {
+    //         $orderId = $request->order_id;
+    //         $transactionStatus = $request->transaction_status;
+    //         $fraudStatus = $request->input('fraud_status', 'accept'); // Default ke 'accept' jika tidak ada
+
+    //         // 1. Cari pesanan dan pembayaran
+    //         $order = Order::find($orderId);
+    //         $payment = Payment::where('order_id', $orderId)->first();
+
+    //         // Pastikan order dan payment ditemukan
+    //         if (!$order || !$payment) {
+    //             return response()->json(['message' => 'Order or Payment not found'], 404);
+    //         }
+
+    //         // 2. Cek agar tidak menimpa status final dari webhook
+    //         // Status final dari sisi aplikasi kita adalah 'Diproses' atau 'failed'
+    //         if ($order->status === 'Diproses' || $order->status === 'failed') {
+    //             Log::info("Client update attempt on final status for Order ID {$orderId}. No action taken.");
+    //             return response()->json([
+    //                 'message' => 'Order status is final. No update needed from client.',
+    //                 'data' => [
+    //                     'order' => $order,
+    //                     'payment' => $payment
+    //                 ]
+    //             ], 200); // Bukan error, hanya tidak ada aksi
+    //         }
+
+    //         // 3. Panggil fungsi terpusat yang sama dengan notification handler
+    //         $this->updateOrderStatusBasedOnMidtrans($order, $payment, $transactionStatus, $fraudStatus);
+
+    //         // Refresh data setelah update
+    //         $order->refresh();
+    //         $payment->refresh();
+
+    //         return response()->json([
+    //             'message' => 'Order status updated for quick feedback.',
+    //             'data' => [
+    //                 'order' => $order,
+    //                 'payment' => $payment
+    //             ]
+    //         ]);
+
+    //     } catch (\Exception $e) {
+    //         Log::error('Client Status Update Error: ' . $e->getMessage());
+    //         return response()->json(['error' => 'Failed to update order status.'], 500);
+    //     }
+    // }
+    // private function updateOrderStatusBasedOnMidtrans(Order $order, ?Payment $payment, string $transactionStatus, string $fraudStatus)
+    // {
+    //     $orderStatus = $order->status;
+    //     $paymentStatus = $payment ? $payment->status : null;
+
+    //     // Logika mapping status dari Midtrans ke status aplikasi Anda
+    //     if ($transactionStatus == 'capture' || $transactionStatus == 'settlement') {
+    //         if ($fraudStatus == 'accept' || $fraudStatus == 'challenge') {
+    //             $orderStatus = 'Diproses';
+    //             $paymentStatus = 'completed'; // Ganti ke 'completed' agar konsisten
+    //         }
+    //     } else if ($transactionStatus == 'pending') {
+    //         $orderStatus = 'pending';
+    //         $paymentStatus = 'pending';
+    //     } else if (in_array($transactionStatus, ['deny', 'expire', 'cancel'])) {
+    //         $orderStatus = 'failed';
+    //         $paymentStatus = 'failed';
+    //     }
+        
+    //     // Lakukan update hanya jika statusnya berubah
+    //     if ($order->status !== $orderStatus) {
+    //         $order->update(['status' => $orderStatus]);
+    //     }
+        
+    //     if ($payment && $payment->status !== $paymentStatus) {
+    //         $payment->update(['status' => $paymentStatus]);
+    //     }
+    // }
 }
