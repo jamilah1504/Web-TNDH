@@ -26,16 +26,19 @@ class ReviewResource extends Resource
             ->schema([
                 Select::make('user_id')
                     ->relationship('user', 'name')
-                    ->disabled(),
+                    ->disabled()
+                    ->label('Nama Pelanggan'),
                 Select::make('product_id')
                     ->relationship('product', 'name')
-                    ->disabled(),
+                    ->disabled()
+                    ->label('Produk'),
                 TextInput::make('rating')
                     ->numeric()
                     ->minValue(1)
                     ->maxValue(5)
                     ->disabled(),
-                Textarea::make('comment')->disabled(),
+                Textarea::make('comment')->disabled()
+                    ->label('Komentar'),
                 Toggle::make('is_approved')->label('Approved'),
             ]);
     }
@@ -44,16 +47,19 @@ class ReviewResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('user.name')->sortable()->searchable(),
-                TextColumn::make('product.name')->sortable()->searchable(),
+                TextColumn::make('user.name')->sortable()->searchable()
+                    ->label('Nama Pelanggan'),
+                TextColumn::make('product.name')->sortable()->searchable()
+                    ->label('Produk'),
                 TextColumn::make('rating'),
-                TextColumn::make('comment')->limit(50),
+                TextColumn::make('comment')->limit(50)
+                    ->label('Komentar'),
                 BooleanColumn::make('is_approved')->label('Approved'),
             ])
-            // ->actions([
-            //     Tables\Actions\EditAction::make(),
-            //     Tables\Actions\DeleteAction::make(),
-            // ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+            ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);

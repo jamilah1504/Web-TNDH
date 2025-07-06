@@ -25,10 +25,14 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('name')->required(),
-                TextInput::make('email')->email()->required()->disabled(),
-                TextInput::make('phone')->nullable(),
-                Select::make('role')->options(['admin' => 'Admin', 'customer' => 'Customer'])->required(),
+                TextInput::make('name')->required()
+                    ->label('Nama Pengguna'),
+                TextInput::make('email')->email()->required()->disabled()
+                    ->label('Email Pengguna'),
+                TextInput::make('phone')->nullable()
+                    ->label('Nomor Telepon'),
+                Select::make('role')->options(['admin' => 'Admin', 'customer' => 'Customer'])->required()
+                    ->label('Peran Pengguna'),
                 Toggle::make('is_active')->label('Active'),
             ]);
     }
@@ -37,10 +41,14 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->sortable()->searchable(),
-                TextColumn::make('email')->sortable()->searchable(),
-                TextColumn::make('phone'),
-                TextColumn::make('role'),
+                TextColumn::make('name')->sortable()->searchable()
+                    ->label('Nama Pengguna'),
+                TextColumn::make('email')->sortable()->searchable()
+                    ->label('Email Pengguna'),
+                TextColumn::make('phone')
+                    ->label('Nomor Telepon'),
+                TextColumn::make('role')
+                    ->label('Peran Pengguna'),
                 BooleanColumn::make('is_active')->label('Active'),
             ])
             ->actions([

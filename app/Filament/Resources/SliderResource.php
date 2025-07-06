@@ -26,18 +26,23 @@ class SliderResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('title')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->label('Judul Slider'),
                 Forms\Components\FileUpload::make('image')
                     ->image()
                     ->directory('sliders')
-                    ->required(),
+                    ->required()
+                    ->label('Gambar Slider'),
                 Forms\Components\Textarea::make('description')
-                    ->nullable(),
+                    ->nullable()
+                    ->label('Deskripsi'),
                 Forms\Components\TextInput::make('link')
                     ->url()
-                    ->nullable(),
+                    ->nullable()
+                    ->label('Link'),
                 Forms\Components\Toggle::make('is_active')
-                    ->default(true),
+                    ->default(true)
+                    ->label('Aktif?'),
             ]);
     }
 
@@ -45,10 +50,15 @@ class SliderResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')->searchable(),
-                Tables\Columns\ImageColumn::make('image'),
-                Tables\Columns\TextColumn::make('description')->limit(50),
-                Tables\Columns\BooleanColumn::make('is_active'),
+                Tables\Columns\TextColumn::make('title')->searchable()
+                    ->sortable()
+                    ->label('Judul Slider'),
+                Tables\Columns\ImageColumn::make('image')
+                    ->label('Gambar Slider'),
+                Tables\Columns\TextColumn::make('description')->limit(50)
+                    ->label('Deskripsi'),
+                Tables\Columns\BooleanColumn::make('is_active')
+                    ->label('Aktif?'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

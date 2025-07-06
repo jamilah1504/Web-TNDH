@@ -23,8 +23,11 @@ class CategoryResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('name_category')->required()->unique(),
-                TextInput::make('total_product')->disabled()->default(0),
+                TextInput::make('name_category')->required()->unique()
+                    ->label('Nama Kategori'),
+                TextInput::make('total_product')->disabled()->default(0)
+                    ->label('Total Produk')
+                    ->helperText('Jumlah produk dalam kategori ini akan otomatis terhitung berdasarkan produk yang ada.'),
             ]);
     }
 
@@ -32,10 +35,12 @@ class CategoryResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name_category')->sortable()->searchable(),
+                TextColumn::make('name_category')->sortable()->searchable()
+                    ->label('Nama Kategori'),
                 TextColumn::make('total_product')
                     ->label('Total Produk')
-                    ->getStateUsing(fn ($record) => $record->products()->count()),            ])
+                    ->getStateUsing(fn ($record) => $record->products()->count()),
+                ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
