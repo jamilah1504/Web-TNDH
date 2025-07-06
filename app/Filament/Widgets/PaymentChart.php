@@ -10,31 +10,35 @@ use Carbon\Carbon;
 class PaymentChart extends ChartWidget
 {
     protected static ?string $heading = 'Grafik Pendapatan (30 Hari Terakhir)';
-    protected static ?int $sort = 2; // Urutan widget
+    protected static ?int $sort = 1;
+    protected static ?int $columns = 6; // Adjusted to 6 for half-width
+
+    protected const BLUE = '#3b82f6';
+    protected const BLUE_BG = 'rgba(59, 130, 246, 0.2)';
 
     protected function getData(): array
     {
-        $data = Payment::query()
+        $records = Payment::query()
             ->where('status', 'completed')
             ->where('payment_date', '>=', now()->subDays(30))
-            ->select(
-                DB::raw('DATE(payment_date) as date'),
-                DB::raw('SUM(amount) as aggregate')
-            )
+            ->selectRaw('DATE(payment_date) as date, SUM(amount) as total')
             ->groupBy('date')
-            ->orderBy('date', 'asc')
+            ->orderBy('date')
             ->get();
 
+        $labels = $records->map(fn($r) => Carbon::parse($r->date)->translatedFormat('d M'))->toArray();
+        $totals = $records->pluck('total')->toArray();
+
         return [
-            'datasets' => [
-                [
-                    'label' => 'Pendapatan',
-                    'data' => $data->map(fn ($value) => $value->aggregate),
-                    'backgroundColor' => 'rgba(54, 162, 235, 0.2)',
-                    'borderColor' => 'rgb(54, 162, 235)',
-                ],
-            ],
-            'labels' => $data->map(fn ($value) => Carbon::parse($value->date)->format('d M')),
+            'datasets' => [[
+                'label' => 'Pendapatan Harian',
+                'data' => $totals,
+                'fill' => false,
+                'borderColor' => self::BLUE,
+                'backgroundColor' => self::BLUE_BG,
+                'tension' => 0.4,
+            ]],
+            'labels' => $labels,
         ];
     }
 

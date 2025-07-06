@@ -2,17 +2,19 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Models\Payment;
+use App\Models\Order;
 use Barryvdh\DomPDF\Facade\Pdf;
 
-Route::get('/', function () {
-    return view('home');
-});
-// Route::get('/payments/income-report', function () {
-//     $payments = Payment::where('status', 'completed')
-//         ->with(['user', 'order'])
-//         ->get();
-//     $totalIncome = $payments->sum('amount');
+// Cetak 1 invoice pembayaran
+Route::get('/print/payment/{id}', function ($id) {
+    $payment = Payment::with(['user', 'order'])->findOrFail($id);
+    $pdf = Pdf::loadView('payments.print', compact('payment'));
+    return $pdf->download('payment-' . $payment->id . '.pdf');
+})->name('print.payment');
 
-//     $pdf = Pdf::loadView('pdf.income_report', compact('payments', 'totalIncome'));
-//     return $pdf->stream('income-report-' . now()->format('Y-m-d') . '.pdf');
-// })->name('payment.income.report');
+// Cetak semua pembayaran
+Route::get('/print/semua-pembayaran', function () {
+    $payments = Payment::with(['user', 'order'])->get();
+    $pdf = Pdf::loadView('payments.print_all', compact('payments'));
+    return $pdf->download('semua-pembayaran.pdf');
+})->name('print.semua-pembayaran');

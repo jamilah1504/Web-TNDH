@@ -46,7 +46,7 @@ class ProductResource extends Resource
                     ->required()
                     ->step(0.01),
                 TextInput::make('discount_price')
-                    ->label('Harga Diskon')
+                    ->label('Diskon')
                     ->numeric()
                     ->nullable()
                     ->step(0.01),

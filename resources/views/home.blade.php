@@ -56,9 +56,9 @@
         <div class="col-lg-7 pt-5 pt-lg-0 order-2 order-lg-1 d-flex align-items-center">
           <div data-aos="zoom-out">
             <h1>Selamat Datang di <span>TNDH+ Food</span></h1>
-            <h2>Nikmati Kuliner Indonesia dengan Pemesanan Mudah</h2>
+            <h2>Nikmati Kuliner dengan Pemesanan Mudah</h2>
             <div class="text-center text-lg-start">
-              <a href="/admin/login" class="btn-get-started scrollto">Pesan Sekarang</a>
+              <a href="/admin/login" class="btn-get-started scrollto">Login Sekarang</a>
             </div>
           </div>
         </div>

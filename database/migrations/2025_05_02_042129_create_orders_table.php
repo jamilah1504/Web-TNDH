@@ -19,8 +19,8 @@ return new class extends Migration
         // Schema::create('order_product', function (Blueprint $table) {
         //     $table->id();
         //     // 1. Buat kolom 'order_id' dengan tipe data string (VARCHAR)
-        //     $table->string('order_id'); 
-            
+        //     $table->string('order_id');
+
         //     // 2. Definisikan foreign key constraint secara manual
         //     $table->foreign('order_id')
         //           ->references('id')      // Mengacu ke kolom 'id'

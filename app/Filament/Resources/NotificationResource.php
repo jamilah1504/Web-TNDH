@@ -11,7 +11,9 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\BooleanColumn;
 
 class NotificationResource extends Resource
@@ -19,7 +21,7 @@ class NotificationResource extends Resource
     protected static ?string $model = Notification::class;
     protected static ?string $navigationIcon = 'heroicon-o-bell';
     protected static ?string $navigationGroup = 'Manajemen Informasi';
-     protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 3;
     protected static ?string $navigationLabel = 'Notifikasi';
     protected static ?string $pluralLabel = 'Notifikasi';
 
@@ -27,13 +29,6 @@ class NotificationResource extends Resource
     {
         return $form
             ->schema([
-                Select::make('role')
-                    ->label('Role')
-                    ->options([
-                        'admin' => 'Admin',
-                        'customer' => 'Customer',
-                    ])
-                    ->required(),
                 Select::make('product_id')
                     ->relationship('product', 'name')
                     ->label('Produk')
@@ -44,9 +39,14 @@ class NotificationResource extends Resource
                 Textarea::make('message')
                     ->label('Pesan')
                     ->required(),
-                Toggle::make('is_read')
-                    ->label('Sudah Dibaca?')
-                    ->default(false),
+                FileUpload::make('photo')
+                    ->label('Foto')
+                    ->image()
+                    ->directory('notifications')
+                    ->nullable(),
+                Toggle::make('is_active')
+                    ->label('Aktif?')
+                    ->default(true),
             ]);
     }
 
@@ -54,17 +54,20 @@ class NotificationResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('role')->label('Role'),
                 TextColumn::make('product.name')
                     ->label('Produk')
                     ->default('-')
                     ->getStateUsing(fn ($record) => $record->product?->name ?? '-'),
-                TextColumn::make('title')->label('Judul'),
-                TextColumn::make('message')->label('Pesan'),
-                // BooleanColumn::make('is_read')->label('Sudah Dibaca?'),
-                TextColumn::make('users_count')
-                    ->label('Jumlah Pengguna')
-                    ->getStateUsing(fn ($record) => $record->users()->count()),
+                TextColumn::make('title')
+                    ->label('Judul'),
+                TextColumn::make('message')
+                    ->label('Pesan'),
+                ImageColumn::make('photo')
+                    ->label('Foto')
+                    ->default('-')
+                    ->getStateUsing(fn ($record) => $record->photo ?? '-'),
+                BooleanColumn::make('is_active')
+                    ->label('Aktif?'),
             ])
             ->filters([
                 //

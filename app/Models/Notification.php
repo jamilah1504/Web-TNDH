@@ -10,7 +10,7 @@ class Notification extends Model
     use HasFactory;
 
     protected $fillable = [
-        'role', 'product_id', 'title', 'message', 'is_read',
+        'product_id', 'title', 'message', 'photo', 'is_active',
     ];
 
     public function product()
@@ -20,11 +20,6 @@ class Notification extends Model
 
     public function users()
     {
-        return User::where('role', $this->role)->get();
-    }
-
-    public function scopeForRole($query, $role)
-    {
-        return $query->where('role', $role);
+        return User::all();
     }
 }
