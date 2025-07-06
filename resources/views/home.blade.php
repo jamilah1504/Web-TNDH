@@ -55,8 +55,8 @@
       <div class="row justify-content-between">
         <div class="col-lg-7 pt-5 pt-lg-0 order-2 order-lg-1 d-flex align-items-center">
           <div data-aos="zoom-out">
-            <h1>Selamat Datang di <span>TNDH+ Food</span></h1>
-            <h2>Nikmati Kuliner dengan Pemesanan Mudah</h2>
+            <h1>Selamat Datang di Web Admin <span>TNDH+ Food</span></h1>
+            <h2>Lakukan Pengelolaan Data Sekarang, dan Dapatkan Hasil Management yang Lebih Optimal</h2>
             <div class="text-center text-lg-start">
               <a href="/admin/login" class="btn-get-started scrollto">Login Sekarang</a>
             </div>

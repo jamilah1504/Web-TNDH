@@ -5,6 +5,10 @@ use App\Models\Payment;
 use App\Models\Order;
 use Barryvdh\DomPDF\Facade\Pdf;
 
+Route::get('/', function () {
+    return view('home');
+});
+
 // Cetak 1 invoice pembayaran
 Route::get('/print/payment/{id}', function ($id) {
     $payment = Payment::with(['user', 'order'])->findOrFail($id);
